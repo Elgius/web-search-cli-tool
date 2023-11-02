@@ -7,10 +7,11 @@ use std::io::{self, Write};
 use std::process::Command;
 
 fn mozilla_firefox() {
-    let output = Command::new("firefox")
-        .arg("http://www.example.com")
+    let output = Command::new("cmd")
+        .arg("/C")
+        .arg("start microsoft-edge:https://www.example.com")
         .output()
-        .expect("failed to run the command");
+        .expect("Failed to execute command");
 }
 
 // fn google_search(search: &str) -> Result<(), Box<dyn Error>> {
