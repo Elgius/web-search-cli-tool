@@ -3,11 +3,19 @@ use std::io::{self, Write};
 // use std::path::PathBuf;
 // use std::io::Error;
 use std::process::Command;
+// use std::str::Utf8Error;
+
+use percent_encoding::{utf8_percent_encode, AsciiSet, CONTROLS};
 
 fn mozilla_firefox(query: String) {
-
     // Note, this only supports single word arguments at the moment!
-    let queries: String = format!("start microsoft-edge:https://www.bing.com/search?q={}", query).trim().parse().expect("Query issue has occured");
+    let queries: String = format!(
+        "start microsoft-edge:https://www.bing.com/search?q={}",
+        query
+    )
+    .trim()
+    .parse()
+    .expect("Query issue has occured");
     let _output = Command::new("cmd")
         .arg("/C")
         .arg(queries)
@@ -15,6 +23,16 @@ fn mozilla_firefox(query: String) {
         .expect("Failed to execute command");
 }
 
+fn url_encoding(search: String) -> String {
+    // check package docs on why we use fragment and need this for initializing
+    const FRAGMENT: &AsciiSet = &CONTROLS.add(b' ').add(b'"').add(b'>').add(b'`');
+
+    // this where we import user search thing, then encode it and export it
+    let input = search;
+    let iter = utf8_percent_encode(&input, FRAGMENT);
+    let encode: String = iter.collect();
+    encode
+}
 
 fn input_data() -> String {
     println!("enter what you want to search today?");
@@ -32,7 +50,7 @@ fn input_data() -> String {
     let data_cleaner: String = search.trim().to_string();
 
     // setting string limits for efficient speeds
-    if data_cleaner.len() > 20 {
+    if data_cleaner.len() > 50 {
         println!("please reduce the search size, be concise as much as possible");
         return input_data();
     } else {
@@ -53,7 +71,10 @@ fn main() {
     // function dedicted to get the data from the user on what to search
     let search_results = input_data();
 
+    // encoding the search data into URL format
+    let story = url_encoding(search_results);
+
+    println!("{}", story);
     // actual function to search for the data
-    //    let google =  google_search(&search_results);
-    let _query = mozilla_firefox(search_results);
+    let _query = mozilla_firefox(story);
 }
